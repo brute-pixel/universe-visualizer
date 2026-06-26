@@ -39,6 +39,12 @@ export class Universe {
   private tween: CameraTween | null = null;
   private motion = true;
   private lastPointer = { x: 0, y: 0 };
+  private pointerMoved = false;
+
+  // Adaptive quality: drop render resolution when the frame rate sags.
+  private fpsAccum = 0;
+  private fpsFrames = 0;
+  private renderScale = 1;
 
   private home = {
     pos: new Vector3(0, 90, 230),
@@ -99,6 +105,7 @@ export class Universe {
     });
     canvas.addEventListener("pointermove", (e) => {
       this.lastPointer = { x: e.clientX, y: e.clientY };
+      this.pointerMoved = true;
     });
   }
 
@@ -213,6 +220,10 @@ export class Universe {
       this.ui.hideTooltip();
       return;
     }
+    // Only raycast when the pointer actually moved — picking every frame is
+    // wasteful and was a major source of jank.
+    if (!this.pointerMoved) return;
+    this.pointerMoved = false;
     this.updatePointer(this.lastPointer.x, this.lastPointer.y);
     const obj = this.pick();
     const canvas = this.sm.renderer.domElement;
@@ -236,8 +247,26 @@ export class Universe {
 
     this.updateTween(elapsed);
     this.updateHover();
+    this.adaptQuality(delta);
     this.sm.render();
   };
+
+  private adaptQuality(delta: number): void {
+    if (delta <= 0) return;
+    this.fpsAccum += delta;
+    this.fpsFrames++;
+    if (this.fpsAccum < 1) return; // evaluate roughly once per second
+    const fps = this.fpsFrames / this.fpsAccum;
+    this.fpsAccum = 0;
+    this.fpsFrames = 0;
+    if (fps < 45 && this.renderScale > 0.5) {
+      this.renderScale = Math.max(0.5, this.renderScale - 0.15);
+      this.sm.setRenderScale(this.renderScale);
+    } else if (fps > 58 && this.renderScale < 1) {
+      this.renderScale = Math.min(1, this.renderScale + 0.1);
+      this.sm.setRenderScale(this.renderScale);
+    }
+  }
 
   private hideLoader(): void {
     const loader = document.getElementById("loader");
