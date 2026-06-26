@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <meta
+      name="description"
+      content="An interactive, real-time 3D visualization of the universe — explore planets, stars, galaxies and nebulae."
+    />
+    <title>Universe Visualizer · Explore the Cosmos</title>
+  </head>
+  <body>
+    <canvas id="scene"></canvas>
+
+    <!-- Loading overlay -->
+    <div id="loader">
+      <div class="loader-core"></div>
+      <p>Charting the cosmos…</p>
+    </div>
+
+    <!-- Top bar -->
+    <header id="topbar">
+      <div class="brand">
+        <span class="brand-mark"></span>
+        <div>
+          <h1>Universe Visualizer</h1>
+          <p>Interactive 3D cosmos · drag to orbit · scroll to zoom</p>
+        </div>
+      </div>
+      <div class="search-wrap">
+        <input id="search" type="text" placeholder="Search planets, stars, galaxies…" autocomplete="off" />
+        <div id="search-results"></div>
+      </div>
+    </header>
+
+    <!-- Object navigator -->
+    <aside id="navigator">
+      <button id="nav-toggle" aria-label="Toggle object list">☰</button>
+      <div class="nav-body">
+        <h2>Celestial Catalog</h2>
+        <div id="nav-list"></div>
+      </div>
+    </aside>
+
+    <!-- Detail / info panel -->
+    <section id="info-panel" class="hidden" aria-live="polite">
+      <button id="info-close" aria-label="Close">×</button>
+      <span id="info-badge" class="badge"></span>
+      <h2 id="info-name"></h2>
+      <p id="info-subtitle"></p>
+      <p id="info-desc"></p>
+      <dl id="info-facts"></dl>
+      <button id="info-focus" class="focus-btn">Fly to object →</button>
+    </section>
+
+    <!-- Bottom control bar -->
+    <footer id="controls">
+      <button id="btn-reset" title="Reset view">⟲ Reset View</button>
+      <button id="btn-tour" title="Take a guided tour">▶ Guided Tour</button>
+      <label class="toggle">
+        <input type="checkbox" id="toggle-motion" checked />
+        <span>Orbital motion</span>
+      </label>
+      <span class="hint" id="hud-hint">Click any glowing object to learn more</span>
+    </footer>
+
+    <!-- Hover tooltip -->
+    <div id="tooltip" class="hidden"></div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
