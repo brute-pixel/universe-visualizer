@@ -18,6 +18,9 @@ export class SceneManager {
   readonly controls: OrbitControls;
   readonly composer: EffectComposer;
 
+  private readonly maxPixelRatio: number;
+  private renderScale = 1;
+
   constructor(canvas: HTMLCanvasElement) {
     this.scene = new Scene();
     this.scene.background = new Color(0x02030a);
@@ -35,7 +38,8 @@ export class SceneManager {
       antialias: true,
       powerPreference: "high-performance",
     });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.maxPixelRatio = Math.min(window.devicePixelRatio, 1.5);
+    this.renderer.setPixelRatio(this.maxPixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
@@ -57,8 +61,23 @@ export class SceneManager {
     );
     this.composer.addPass(bloom);
     this.composer.addPass(new OutputPass());
+    this.composer.setPixelRatio(this.maxPixelRatio);
 
     window.addEventListener("resize", this.onResize);
+  }
+
+  /**
+   * Lower the effective resolution on slow devices. `scale` in (0, 1].
+   * Applied on top of the capped device pixel ratio so the expensive bloom
+   * pass renders fewer pixels when the frame rate drops.
+   */
+  setRenderScale(scale: number): void {
+    const clamped = Math.max(0.5, Math.min(1, scale));
+    if (Math.abs(clamped - this.renderScale) < 0.01) return;
+    this.renderScale = clamped;
+    const ratio = this.maxPixelRatio * clamped;
+    this.renderer.setPixelRatio(ratio);
+    this.composer.setPixelRatio(ratio);
   }
 
   private onResize = (): void => {
